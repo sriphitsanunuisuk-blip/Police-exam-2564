@@ -1,0 +1,619 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Trophy, 
+  Timer, 
+  BookOpen, 
+  CheckCircle2, 
+  XCircle, 
+  ChevronRight, 
+  ChevronLeft, 
+  RotateCcw,
+  ShieldCheck,
+  Award,
+  BarChart3,
+  BrainCircuit,
+  Scale,
+  Monitor,
+  HeartHandshake,
+  MessageCircle,
+  Hash,
+  Menu,
+  User,
+  LayoutDashboard,
+  LogOut,
+  Info,
+  Clock,
+  Target,
+  Zap,
+  TrendingUp,
+  FileText,
+  AlertCircle,
+  MinusCircle,
+  History,
+  Trash2,
+  Calendar
+} from 'lucide-react';
+
+// --- DATA: QUESTIONS_PART_1 (50 questions) ---
+const QUESTIONS_PART_1 = [
+  // --- THAI (1-10) ---
+  { id: 1, subject: "ภาษาไทย", question: "คำในข้อใดสะกดถูกต้องทุกคำ?", options: ["กะเพรา, กะพริบ, ปะทะ", "กระเพรา, กระพริบ, ประทะ", "กะเพรา, กระพริบ, ปะทะ", "กระเพรา, กะพริบ, ประทะ"], correct: 0 },
+  { id: 2, subject: "ภาษาไทย", question: "ข้อใดใช้สำนวน 'กบในกะลา' ได้ถูกต้องที่สุด?", options: ["คนที่เก่งแต่ในพื้นที่ของตนเอง", "คนที่มีความรู้น้อยแต่สำคัญตัวว่ารู้มาก", "คนที่ใช้ชีวิตอยู่อย่างประหยัด", "คนที่ชอบเก็บตัวอยู่แต่ในบ้าน"], correct: 1 },
+  { id: 3, subject: "ภาษาไทย", question: "คำราชาศัพท์ 'เสด็จประพาส' มีความหมายว่าอย่างไร?", options: ["ไปเที่ยว", "ไปนอน", "ไปกิน", "ไปประชุม"], correct: 0 },
+  { id: 4, subject: "ภาษาไทย", question: "ข้อใดเป็นคำสมาสที่มีการสนธิ?", options: ["มกราคม", "มหาชน", "พละศึกษา", "อุบัติเหตุ"], correct: 0 },
+  { id: 5, subject: "ภาษาไทย", question: "ประโยคใดมี 'คำกริยานุเคราะห์'?", options: ["เขาเดินเร็วมาก", "นักเรียนกำลังทำการบ้าน", "ฝนตกหนัก", "แม่ไปตลาด"], correct: 1 },
+  { id: 6, subject: "ภาษาไทย", question: "ข้อใดใช้ลักษณนามผิด?", options: ["เลื่อย 1 ปื้น", "แห 1 ปาก", "ช้อน 1 อัน", "พระสงฆ์ 1 รูป"], correct: 2 },
+  { id: 7, subject: "ภาษาไทย", question: "ข้อใดเป็นคำเป็นทุกคำ?", options: ["มด, กบ, สด", "นอน, มา, ลืม", "รัก, คิด, มาก", "นัด, พบ, จุด"], correct: 1 },
+  { id: 8, subject: "ภาษาไทย", question: "คำว่า 'มงคล' ตรงข้ามกับคำใด?", options: ["อัปมงคล", "เคราะห์ร้าย", "ภัยพิบัติ", "ความตาย"], correct: 0 },
+  { id: 9, subject: "ภาษาไทย", question: "ข้อใดคือความหมายของ 'วิจารณญาณ'?", options: ["การอ่านเร็ว", "การจดจำแม่นยำ", "ปัญญาที่สามารถรู้หรือให้เหตุผลที่ถูกต้องได้", "การเขียนบรรยาย"], correct: 2 },
+  { id: 10, subject: "ภาษาไทย", question: "คำในข้อใดมีความหมายเดียวกับคำว่า 'นก'?", options: ["บุหรง", "กุญชร", "อัสดร", "มัจฉา"], correct: 0 },
+
+  // --- MATH (11-20) ---
+  { id: 11, subject: "ความสามารถทั่วไป", question: "2, 5, 10, 17, 26, ... ตัวเลขถัดไปคือข้อใด?", options: ["35", "37", "39", "41"], correct: 1 },
+  { id: 12, subject: "ความสามารถทั่วไป", question: "ถ้า 2x + 5 = 15 แล้ว x^2 มีค่าเท่าใด?", options: ["25", "10", "100", "50"], correct: 0 },
+  { id: 13, subject: "ความสามารถทั่วไป", question: "เลข 3 จำนวนเรียงกันรวมกันได้ 45 เลขที่มากที่สุดคือเท่าใด?", options: ["14", "15", "16", "17"], correct: 2 },
+  { id: 14, subject: "ความสามารถทั่วไป", question: "ซื้อพัดลมราคา 800 บาท ขายไป 1,000 บาท ได้กำไรร้อยละเท่าใด?", options: ["20%", "25%", "30%", "15%"], correct: 1 },
+  { id: 15, subject: "ความสามารถทั่วไป", question: "ห.ร.ม. ของ 12, 18 และ 24 คือข้อใด?", options: ["4", "6", "8", "12"], correct: 1 },
+  { id: 16, subject: "ความสามารถทั่วไป", question: "ถ้านาฬิกาเรือนหนึ่งเดินช้าไป 5 นาทีทุกๆ ชั่วโมง ผ่านไป 12 ชั่วโมง จะช้าไปกี่นาที?", options: ["30 นาที", "50 นาที", "60 นาที", "120 นาที"], correct: 2 },
+  { id: 17, subject: "ความสามารถทั่วไป", question: "อัตราส่วนพ่อต่อลูกคือ 5:2 ถ้าพ่ออายุ 50 ปี ลูกจะอายุเท่าใด?", options: ["15 ปี", "20 ปี", "25 ปี", "30 ปี"], correct: 1 },
+  { id: 18, subject: "ความสามารถทั่วไป", question: "พื้นที่สี่เหลี่ยมจัตุรัสที่มีความยาวด้านละ 8 ซม. คือเท่าใด?", options: ["16 ตร.ซม.", "32 ตร.ซม.", "64 ตร.ซม.", "128 ตร.ซม."], correct: 2 },
+  { id: 19, subject: "ความสามารถทั่วไป", question: "ความน่าจะเป็นที่จะทอดลูกเต๋า 1 ลูกแล้วได้แต้มคู่คือเท่าใด?", options: ["1/6", "1/3", "1/2", "2/3"], correct: 2 },
+  { id: 20, subject: "ความสามารถทั่วไป", question: "ค่าเฉลี่ยของ 10, 20, 30, 40, 50 คือข้อใด?", options: ["25", "30", "35", "40"], correct: 1 },
+
+  // --- ENGLISH (21-30) ---
+  { id: 21, subject: "ภาษาอังกฤษ", question: "He ______ to school every day.", options: ["go", "goes", "going", "went"], correct: 1 },
+  { id: 22, subject: "ภาษาอังกฤษ", question: "______ is your best friend?", options: ["What", "Where", "Who", "When"], correct: 2 },
+  { id: 23, subject: "ภาษาอังกฤษ", question: "I ______ a teacher.", options: ["is", "am", "are", "be"], correct: 1 },
+  { id: 24, subject: "ภาษาอังกฤษ", question: "She is ______ than her sister.", options: ["tall", "taller", "tallest", "more tall"], correct: 1 },
+  { id: 25, subject: "ภาษาอังกฤษ", question: "They ______ football now.", options: ["play", "plays", "are playing", "is playing"], correct: 2 },
+  { id: 26, subject: "ภาษาอังกฤษ", question: "I have been here ______ 2 hours.", options: ["for", "since", "at", "during"], correct: 0 },
+  { id: 27, subject: "ภาษาอังกฤษ", question: "Wait! You ______ your umbrella.", options: ["forget", "forgot", "forgets", "are forgetting"], correct: 1 },
+  { id: 28, subject: "ภาษาอังกฤษ", question: "Which one is an animal?", options: ["Apple", "Car", "Elephant", "Pencil"], correct: 2 },
+  { id: 29, subject: "ภาษาอังกฤษ", question: "A: How are you? B: ______", options: ["I'm fine, thank you.", "I'm 20 years old.", "I'm a student.", "I'm in Bangkok."], correct: 0 },
+  { id: 30, subject: "ภาษาอังกฤษ", question: "Opposite of 'Small' is ______", options: ["Tiny", "Big", "Thin", "Short"], correct: 1 },
+
+  // --- LAW & SOCIETY (31-40) ---
+  { id: 31, subject: "กฎหมายและสังคม", question: "บุคคลจะบรรลุนิติภาวะเมื่ออายุครบกี่ปี?", options: ["15 ปี", "17 ปี", "18 ปี", "20 ปี"], correct: 3 },
+  { id: 32, subject: "กฎหมายและสังคม", question: "รัฐธรรมนูญแห่งราชอาณาจักรไทยฉบับปัจจุบันคือปีใด?", options: ["2540", "2550", "2560", "2562"], correct: 2 },
+  { id: 33, subject: "กฎหมายและสังคม", question: "การกระทำในข้อใดถือเป็นความผิดลหุโทษ?", options: ["ฆ่าผู้อื่น", "ลักทรัพย์", "จำคุกไม่เกิน 1 เดือนหรือปรับไม่เกิน 10,000 บาท", "ปล้นทรัพย์"], correct: 2 },
+  { id: 34, subject: "กฎหมายและสังคม", question: "ศาลในข้อใดมีอำนาจสูงสุดในกระบวนการยุติธรรมไทย?", options: ["ศาลชั้นต้น", "ศาลอุทธรณ์", "ศาลฎีกา", "ศาลรัฐธรรมนูญ"], correct: 2 },
+  { id: 35, subject: "กฎหมายและสังคม", question: "วันตำรวจไทยตรงกับวันที่เท่าใดของทุกปี?", options: ["13 ตุลาคม", "17 ตุลาคม", "23 ตุลาคม", "5 ธันวาคม"], correct: 1 },
+  { id: 36, subject: "กฎหมายและสังคม", question: "หัวใจสำคัญของระบอบประชาธิปไตยคืออะไร?", options: ["การเลือกตั้ง", "อำนาธิปไตยเป็นของปวงชน", "การมีรัฐบาล", "การมีกฎหมาย"], correct: 1 },
+  { id: 37, subject: "กฎหมายและสังคม", question: "สิทธิขั้นพื้นฐานของประชาชนไทยถูกกำหนดไว้ในกฎหมายใด?", options: ["ประมวลกฎหมายแพ่ง", "ประมวลกฎหมายอาญา", "รัฐธรรมนูญ", "พรบ. ตำรวจ"], correct: 2 },
+  { id: 38, subject: "กฎหมายและสังคม", question: "ข้อใดไม่ใช่ความผิดฐานลักทรัพย์?", options: ["เอาทรัพย์ของผู้อื่นไปโดยทุจริต", "ขู่เข็ญให้ส่งมอบทรัพย์", "แอบหยิบกระเป๋าเงินคนอื่น", "ล้วงกระเป๋าบนรถเมล์"], correct: 1 },
+  { id: 39, subject: "กฎหมายและสังคม", question: "นายกรัฐมนตรีคนปัจจุบันของไทย (ณ ปี 2567) มาจากพรรคการเมืองใด?", options: ["เพื่อไทย", "ก้าวไกล", "รวมไทยสร้างชาติ", "ภูมิใจไทย"], correct: 0 },
+  { id: 40, subject: "กฎหมายและสังคม", question: "วันเข้าพรรษาตรงกับวันใด?", options: ["แรม 1 ค่ำ เดือน 8", "ขึ้น 15 ค่ำ เดือน 8", "แรม 1 ค่ำ เดือน 11", "ขึ้น 15 ค่ำ เดือน 3"], correct: 0 },
+
+  // --- COMPUTER & ETHICS (41-50) ---
+  { id: 41, subject: "คอมพิวเตอร์และจริยธรรม", question: "Ctrl + C ในระบบปฏิบัติการ Windows คือคำสั่งอะไร?", options: ["ตัด (Cut)", "คัดลอก (Copy)", "วาง (Paste)", "เลิกทำ (Undo)"], correct: 1 },
+  { id: 42, subject: "คอมพิวเตอร์และจริยธรรม", question: "ซอฟต์แวร์ใดใช้สำหรับพิมพ์เอกสารรายงาน?", options: ["MS Excel", "MS PowerPoint", "MS Word", "MS Access"], correct: 2 },
+  { id: 43, subject: "คอมพิวเตอร์และจริยธรรม", question: "อุปกรณ์ใดทำหน้าที่เป็นสมองของคอมพิวเตอร์?", options: ["RAM", "Hard Disk", "Monitor", "CPU"], correct: 3 },
+  { id: 44, subject: "คอมพิวเตอร์และจริยธรรม", question: "URL คืออะไร?", options: ["ชื่อเว็บไซต์", "รหัสผ่าน", "ที่อยู่ของแหล่งทรัพยากรบนอินเทอร์เน็ต", "ชื่อผู้ใช้"], correct: 2 },
+  { id: 45, subject: "คอมพิวเตอร์และจริยธรรม", question: "จริยธรรมของตำรวจที่สำคัญที่สุดคือข้อใด?", options: ["ความซื่อสัตย์สุจริต", "ความรวย", "ความกลัว", "ความเห็นแก่ตัว"], correct: 0 },
+  { id: 46, subject: "คอมพิวเตอร์และจริยธรรม", question: "หากพบเงินตกอยู่ริมถนน ตำรวจที่ดีควรทำอย่างไร?", options: ["เก็บไว้ใช้เอง", "นำไปทำบุญ", "สืบหาเจ้าของและนำส่งคืน", "ปล่อยทิ้งไว้"], correct: 2 },
+  { id: 47, subject: "คอมพิวเตอร์และจริยธรรม", question: "HTTP ย่อมาจากอะไร?", options: ["Hypertext Transfer Protocol", "High Text Transfer Process", "Hard Type Transfer Protocol", "Home Text Transfer Path"], correct: 0 },
+  { id: 48, subject: "คอมพิวเตอร์และจริยธรรม", question: "ข้อใดคือการใช้อินเทอร์เน็ตอย่างปลอดภัย?", options: ["บอกรหัสผ่านให้เพื่อน", "โพสต์ด่าผู้อื่น", "ตั้งรหัสผ่านที่คาดเดายาก", "นัดเจอคนแปลกหน้าตามลำพัง"], correct: 2 },
+  { id: 49, subject: "คอมพิวเตอร์และจริยธรรม", question: "คุณธรรม 'หิริโอตตัปปะ' หมายถึงอะไร?", options: ["ความอดทน", "ความขยัน", "ความละอายและเกรงกลัวต่อบาป", "ความกตัญญู"], correct: 2 },
+  { id: 50, subject: "คอมพิวเตอร์และจริยธรรม", question: "พฤติกรรมใดของตำรวจที่ถือว่า 'ประพฤติมิชอบ'?", options: ["ช่วยเหลือประชาชน", "รับสินบนจากผู้กระทำผิด", "กวดขันวินัยจราจร", "รายงานเหตุการณ์ตามจริง"], correct: 1 },
+];
+
+const App = () => {
+  const [view, setView] = useState('landing'); 
+  const [selectedPart, setSelectedPart] = useState(1);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [userAnswers, setUserAnswers] = useState({});
+  const [timeLeft, setTimeLeft] = useState(3600); 
+  const [timeSpentOnFinish, setTimeSpentOnFinish] = useState(0);
+  const [isFinished, setIsFinished] = useState(false);
+  const [reviewMode, setReviewMode] = useState(false);
+  const [examHistory, setExamHistory] = useState([]);
+
+  const totalQuestions = QUESTIONS_PART_1.length;
+  const parts = Array.from({ length: 10 }, (_, i) => i + 1);
+
+  // Load History from LocalStorage on mount
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('police_exam_history');
+    if (savedHistory) {
+      setExamHistory(JSON.parse(savedHistory));
+    }
+  }, []);
+
+  // Timer logic
+  useEffect(() => {
+    let timer;
+    if (view === 'quiz' && !isFinished && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && view === 'quiz') {
+      finishQuiz();
+    }
+    return () => clearInterval(timer);
+  }, [view, isFinished, timeLeft]);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const startQuiz = () => {
+    setCurrentIdx(0);
+    setUserAnswers({});
+    setTimeLeft(3600);
+    setTimeSpentOnFinish(0);
+    setIsFinished(false);
+    setReviewMode(false);
+    setView('quiz');
+  };
+
+  const finishQuiz = () => {
+    const spent = 3600 - timeLeft;
+    setTimeSpentOnFinish(spent);
+    setIsFinished(true);
+
+    // Calculate score for history
+    let correct = 0;
+    QUESTIONS_PART_1.forEach((q, idx) => {
+      if (userAnswers[idx] === q.correct) correct++;
+    });
+    
+    const percentage = (correct / totalQuestions) * 100;
+    const rankData = getRank(correct);
+
+    // Save to history
+    const newEntry = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      part: selectedPart,
+      score: correct,
+      total: totalQuestions,
+      percentage: percentage,
+      timeSpent: spent,
+      rank: rankData.title
+    };
+
+    const updatedHistory = [newEntry, ...examHistory];
+    setExamHistory(updatedHistory);
+    localStorage.setItem('police_exam_history', JSON.stringify(updatedHistory));
+
+    setView('result');
+  };
+
+  const finalStats = useMemo(() => {
+    let correct = 0;
+    let incorrect = 0;
+    let skipped = 0;
+    
+    QUESTIONS_PART_1.forEach((q, idx) => {
+      if (userAnswers[idx] === undefined) {
+        skipped++;
+      } else if (userAnswers[idx] === q.correct) {
+        correct++;
+      } else {
+        incorrect++;
+      }
+    });
+
+    const percentage = (correct / totalQuestions) * 100;
+    const isPassed = percentage >= 60; 
+
+    return { correct, incorrect, skipped, percentage, isPassed };
+  }, [userAnswers, totalQuestions]);
+
+  const scoreByCategory = useMemo(() => {
+    const categories = {};
+    QUESTIONS_PART_1.forEach((q, idx) => {
+      if (!categories[q.subject]) {
+        categories[q.subject] = { total: 0, correct: 0, incorrect: 0, skipped: 0 };
+      }
+      categories[q.subject].total++;
+      if (userAnswers[idx] === undefined) {
+        categories[q.subject].skipped++;
+      } else if (userAnswers[idx] === q.correct) {
+        categories[q.subject].correct++;
+      } else {
+        categories[q.subject].incorrect++;
+      }
+    });
+    return categories;
+  }, [userAnswers]);
+
+  const getRank = (correctCount) => {
+    const percentage = (correctCount / totalQuestions) * 100;
+    if (percentage >= 90) return { title: "ผู้กำกับการ", color: "text-[#D4AF37]", icon: <Award className="w-10 h-10 md:w-12 md:h-12" /> };
+    if (percentage >= 80) return { title: "สารวัตร", color: "text-blue-600", icon: <ShieldCheck className="w-10 h-10 md:w-12 md:h-12" /> };
+    if (percentage >= 70) return { title: "ร้อยตำรวจเอก", color: "text-slate-700", icon: <ShieldCheck className="w-10 h-10 md:w-12 md:h-12" /> };
+    if (percentage >= 60) return { title: "นายสิบตำรวจ", color: "text-slate-600", icon: <User className="w-10 h-10 md:w-12 md:h-12" /> };
+    return { title: "พลสำรอง", color: "text-red-500", icon: <Info className="w-10 h-10 md:w-12 md:h-12" /> };
+  };
+
+  const currentRank = getRank(finalStats.correct);
+
+  const SubjectIcon = ({ subject }) => {
+    switch(subject) {
+      case "ภาษาไทย": return <MessageCircle className="w-4 h-4 md:w-5 md:h-5" />;
+      case "ความสามารถทั่วไป": return <BrainCircuit className="w-4 h-4 md:w-5 md:h-5" />;
+      case "ภาษาอังกฤษ": return <Hash className="w-4 h-4 md:w-5 md:h-5" />;
+      case "กฎหมายและสังคม": return <Scale className="w-4 h-4 md:w-5 md:h-5" />;
+      case "คอมพิวเตอร์และจริยธรรม": return <Monitor className="w-4 h-4 md:w-5 md:h-5" />;
+      default: return <BookOpen className="w-4 h-4 md:w-5 md:h-5" />;
+    }
+  };
+
+  const Navbar = () => (
+    <nav className="bg-[#002347] text-white border-b border-white/10 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center sticky top-0 z-50 shadow-lg">
+      <div className="flex items-center gap-2 md:gap-3 cursor-pointer" onClick={() => setView('landing')}>
+        <div className="bg-[#D4AF37] p-1.5 md:p-2 rounded-lg shadow-inner">
+          <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-[#002347]" />
+        </div>
+        <div>
+          <h1 className="text-sm md:text-lg font-bold leading-none tracking-tight">POLICE ACADEMY</h1>
+          <p className="hidden xs:block text-[8px] md:text-[10px] text-white/60 tracking-widest uppercase mt-0.5">Examination System</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 md:gap-6">
+        <button 
+          onClick={() => setView('history')}
+          className={`flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-xl transition-all font-bold text-[10px] md:text-xs uppercase tracking-widest ${view === 'history' ? 'bg-[#D4AF37] text-[#002347]' : 'hover:bg-white/10 text-white/80'}`}
+        >
+          <History className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          <span className="hidden sm:inline">ประวัติการสอบ</span>
+        </button>
+        <div className="w-8 h-8 md:w-10 md:h-10 bg-[#D4AF37] rounded-full flex items-center justify-center border border-white/20 shadow-lg">
+          <User className="w-5 h-5 md:w-6 md:h-6 text-[#002347]" />
+        </div>
+      </div>
+    </nav>
+  );
+
+  const clearHistory = () => {
+    if (window.confirm("คุณต้องการลบประวัติการสอบทั้งหมดใช่หรือไม่?")) {
+      setExamHistory([]);
+      localStorage.removeItem('police_exam_history');
+    }
+  };
+
+  // --- View Logic ---
+  if (view === 'landing') {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 md:p-6">
+        <div className="max-w-4xl w-full flex flex-col md:flex-row bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-2xl overflow-hidden border border-slate-200">
+          <div className="w-full md:w-5/12 bg-[#002347] p-8 md:p-12 text-white flex flex-col justify-between relative">
+            <div className="absolute top-0 right-0 w-full h-full opacity-5 pointer-events-none overflow-hidden">
+               <ShieldCheck className="w-[120%] h-[120%] -translate-y-1/4 translate-x-1/4 rotate-12" />
+            </div>
+            <div className="relative z-10">
+              <div className="bg-[#D4AF37] w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center mb-6 md:mb-8 shadow-lg">
+                <ShieldCheck className="w-8 h-8 md:w-10 md:h-10 text-[#002347]" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-black mb-4 leading-tight uppercase">POLICE<br className="hidden md:block"/>ACADEMY<br/><span className="text-[#D4AF37]">MOCK EXAM</span></h1>
+              <div className="h-1 w-16 md:w-20 bg-[#D4AF37] rounded-full mb-6"></div>
+              <p className="text-blue-100 text-sm md:text-lg font-light leading-relaxed">ระบบจำลองการทดสอบความรู้พื้นฐานเพื่อเตรียมความพร้อมสู่การเป็นข้าราชการตำรวจไทย</p>
+            </div>
+          </div>
+          <div className="w-full md:w-7/12 p-8 md:p-12 flex flex-col justify-center bg-white text-center md:text-left">
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-6 flex items-center justify-center md:justify-start gap-2">
+              <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-[#002347]" />
+              ยินดีต้อนรับเข้าสู่ระบบ
+            </h2>
+            <div className="space-y-3 md:space-y-4">
+              <button onClick={() => setView('lobby')} className="w-full py-4 md:py-5 bg-[#002347] hover:bg-[#003366] text-white rounded-xl md:rounded-2xl text-lg md:text-xl font-bold transition-all transform hover:translate-y-[-2px] shadow-lg flex items-center justify-center gap-2 md:gap-3">
+                เข้าสู่ห้องสอบจำลอง
+                <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
+              <button onClick={() => setView('history')} className="w-full py-3 md:py-4 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl md:rounded-2xl text-base md:text-lg font-bold transition-all border border-slate-200 flex items-center justify-center gap-2 md:gap-3">
+                <History className="w-4 h-4 md:w-5 md:h-5" />
+                ดูประวัติการสอบ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'history') {
+    return (
+      <div className="min-h-screen bg-[#F1F5F9]">
+        <Navbar />
+        <div className="max-w-6xl mx-auto p-4 md:p-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-10 gap-4">
+            <div>
+               <h2 className="text-2xl md:text-3xl font-black text-[#002347] tracking-tight uppercase">EXAMINATION HISTORY</h2>
+               <p className="text-sm md:text-base text-slate-500 font-medium">ติดตามประวัติและพัฒนาการการทำข้อสอบของคุณ</p>
+            </div>
+            {examHistory.length > 0 && (
+              <button onClick={clearHistory} className="flex items-center gap-2 text-red-500 font-bold hover:text-red-700 transition-colors text-[10px] md:text-sm uppercase tracking-widest px-3 py-1.5 md:px-4 md:py-2 rounded-xl bg-red-50 border border-red-100">
+                <Trash2 className="w-3.5 h-3.5" /> ล้างประวัติ
+              </button>
+            )}
+          </div>
+
+          {examHistory.length === 0 ? (
+            <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-12 md:p-20 text-center border-2 border-dashed border-slate-200 shadow-sm">
+               <History className="w-12 h-12 md:w-16 md:h-16 text-slate-200 mx-auto mb-6" />
+               <h3 className="text-xl md:text-2xl font-bold text-slate-400 mb-2 uppercase">ยังไม่มีประวัติการสอบ</h3>
+               <button onClick={() => setView('lobby')} className="mt-6 bg-[#002347] text-white px-8 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl font-black shadow-xl hover:bg-[#003366] transition-all">
+                 เริ่มการทดสอบครั้งแรก
+               </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 md:gap-4">
+               {examHistory.map((item) => (
+                 <div key={item.id} className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row items-center gap-4 md:gap-6">
+                    <div className="flex-shrink-0 w-12 h-12 md:w-16 md:h-16 bg-[#002347] rounded-xl md:rounded-2xl flex flex-col items-center justify-center text-white">
+                       <span className="text-[8px] md:text-[10px] font-black uppercase opacity-60 leading-none mb-1">Part</span>
+                       <span className="text-xl md:text-2xl font-black leading-none">{item.part}</span>
+                    </div>
+                    
+                    <div className="flex-1 text-center sm:text-left">
+                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mb-2">
+                          <h4 className="text-base md:text-lg font-black text-slate-800 uppercase tracking-tight">{item.rank}</h4>
+                          <div className="flex items-center justify-center sm:justify-start gap-1.5 text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">
+                             <Calendar className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                             {item.date}
+                          </div>
+                       </div>
+                       <div className="flex flex-wrap justify-center sm:justify-start gap-3 md:gap-4">
+                          <div className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">
+                             <Clock className="w-3 h-3 text-slate-400" /> {formatTime(item.timeSpent)}
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">
+                             <CheckCircle2 className="w-3 h-3 text-green-500" /> {item.score}/{item.total} ข้อ
+                          </div>
+                       </div>
+                    </div>
+
+                    <div className="w-full sm:w-auto flex flex-row sm:flex-col items-center justify-between sm:justify-center sm:items-end border-t sm:border-t-0 pt-3 sm:pt-0">
+                       <div className="text-2xl md:text-3xl font-black text-[#002347]">{item.percentage.toFixed(0)}%</div>
+                       <div className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest px-2 py-0.5 md:px-3 md:py-1 rounded-full ${item.percentage >= 60 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          {item.percentage >= 60 ? 'Passed' : 'Failed'}
+                       </div>
+                    </div>
+                 </div>
+               ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'lobby') {
+    return (
+      <div className="min-h-screen bg-[#F1F5F9]">
+        <Navbar />
+        <div className="max-w-6xl mx-auto p-4 md:p-8">
+          <h2 className="text-2xl md:text-3xl font-black text-[#002347] mb-2 tracking-tight uppercase">EXAMINATION DASHBOARD</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-5 mt-6 md:mt-10">
+            {parts.map(p => (
+              <button
+                key={p}
+                onClick={() => setSelectedPart(p)}
+                className={`group relative p-4 md:p-6 rounded-2xl md:rounded-3xl border-2 transition-all flex flex-col items-center gap-3 md:gap-4 ${
+                  selectedPart === p ? 'border-[#002347] bg-white shadow-xl scale-105 z-10' : 'border-transparent bg-white/60 hover:bg-white'
+                }`}
+              >
+                <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center font-black text-lg md:text-xl ${
+                  selectedPart === p ? 'bg-[#002347] text-white' : 'bg-slate-100 text-slate-400'
+                }`}>{p.toString().padStart(2, '0')}</div>
+                <span className={`block font-bold text-[10px] md:text-sm uppercase tracking-widest ${selectedPart === p ? 'text-[#002347]' : 'text-slate-500'}`}>Part {p}</span>
+              </button>
+            ))}
+          </div>
+          <div className="mt-8 md:mt-12 bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-10 border border-slate-200 shadow-xl flex flex-col md:flex-row gap-8 md:gap-12 items-center">
+             <div className="w-full space-y-6 md:space-y-8">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
+                  {[{ label: 'ข้อสอบ', val: '50 ข้อ' }, { label: 'เวลา', val: '60 นาที' }, { label: 'เกณฑ์ผ่าน', val: '60%' }, { label: 'พาร์ท', val: `ชุดที่ ${selectedPart}` }].map((item, i) => (
+                    <div key={i} className="space-y-0.5 md:space-y-1">
+                      <span className="text-[8px] md:text-[10px] uppercase font-bold tracking-widest text-slate-400">{item.label}</span>
+                      <div className="text-base md:text-lg font-bold text-slate-700">{item.val}</div>
+                    </div>
+                  ))}
+                </div>
+                <button 
+                  disabled={selectedPart !== 1}
+                  onClick={startQuiz}
+                  className={`w-full py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-base md:text-lg shadow-lg flex items-center justify-center gap-2 md:gap-3 ${selectedPart === 1 ? 'bg-[#002347] text-white hover:bg-[#003366]' : 'bg-slate-100 text-slate-300 cursor-not-allowed'}`}
+                >
+                  เริ่มการทดสอบ (ENTER EXAM)
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'quiz') {
+    const q = QUESTIONS_PART_1[currentIdx];
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+        <header className="bg-[#002347] text-white px-4 md:px-6 py-3 md:py-4 shadow-xl flex justify-between items-center sticky top-0 z-50">
+          <div className="flex flex-col">
+            <span className="text-[8px] uppercase font-bold opacity-40">Questions</span>
+            <span className="text-xs md:text-sm font-bold font-mono">{currentIdx + 1} / {totalQuestions}</span>
+          </div>
+          <div className="flex items-center gap-2 md:gap-3 bg-white/10 px-3 md:px-6 py-1.5 md:py-2 rounded-lg md:rounded-xl border border-white/10">
+            <Timer className="w-4 h-4 md:w-5 md:h-5 text-[#D4AF37]" />
+            <span className="font-mono font-black text-sm md:text-xl tracking-tighter">{formatTime(timeLeft)}</span>
+          </div>
+          <button onClick={finishQuiz} className="bg-[#800000] hover:bg-red-800 text-white px-3 md:px-5 py-1.5 md:py-2.5 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm uppercase tracking-tighter">ส่งคำตอบ</button>
+        </header>
+        <main className="flex-1 flex flex-col p-3 md:p-8">
+          <div className="max-w-4xl mx-auto w-full flex flex-col h-full">
+            <div className="mb-4 flex items-center">
+               <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                  <div className="bg-[#002347] p-1 rounded-md text-white">
+                    <SubjectIcon subject={q.subject} />
+                  </div>
+                  <span className="text-[10px] md:text-xs font-black text-slate-700 uppercase tracking-widest">{q.subject}</span>
+               </div>
+            </div>
+            <div className="bg-white rounded-[1.25rem] md:rounded-[2.5rem] p-6 md:p-14 shadow-2xl border border-slate-200 min-h-[400px] md:min-h-[500px] flex flex-col relative overflow-hidden flex-1">
+              <div className="absolute top-0 left-0 w-1 md:w-2 h-full bg-[#002347]"></div>
+              <div className="mb-6 md:mb-10">
+                <span className="text-[#002347] font-black text-2xl md:text-4xl opacity-10 font-mono mb-1 md:mb-2 block">Q.{currentIdx + 1}</span>
+                <h2 className="text-lg md:text-3xl font-bold text-slate-800 leading-snug">{q.question}</h2>
+              </div>
+              <div className="grid grid-cols-1 gap-3 md:gap-4 mt-auto">
+                {q.options.map((option, oIdx) => (
+                  <button
+                    key={oIdx}
+                    onClick={() => setUserAnswers(prev => ({...prev, [currentIdx]: oIdx}))}
+                    className={`p-4 md:p-5 rounded-xl md:rounded-3xl border-2 transition-all flex items-center gap-4 md:gap-6 text-left ${userAnswers[currentIdx] === oIdx ? 'border-[#002347] bg-[#F1F5F9] shadow-inner translate-x-1 md:translate-x-2' : 'border-slate-100 bg-slate-50/50 hover:bg-white'}`}
+                  >
+                    <div className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex-shrink-0 flex items-center justify-center font-black text-xs md:text-lg ${userAnswers[currentIdx] === oIdx ? 'bg-[#002347] text-white shadow-lg' : 'bg-white text-slate-400 border'}`}>{String.fromCharCode(65 + oIdx)}</div>
+                    <span className={`text-sm md:text-lg font-bold ${userAnswers[currentIdx] === oIdx ? 'text-[#002347]' : 'text-slate-600'}`}>{option}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mt-4 md:mt-8 flex justify-between gap-3">
+              <button disabled={currentIdx === 0} onClick={() => setCurrentIdx(prev => prev - 1)} className={`flex-1 sm:flex-none px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold transition-all flex justify-center items-center ${currentIdx === 0 ? 'text-slate-300 bg-white/50 border-slate-100' : 'text-slate-600 bg-white shadow-md border hover:bg-slate-50'}`}><ChevronLeft className="w-5 h-5" /> <span className="hidden xs:inline ml-1">PREV</span></button>
+              <button 
+                onClick={() => { if (currentIdx < totalQuestions - 1) setCurrentIdx(prev => prev + 1); else finishQuiz(); }}
+                className="flex-1 sm:flex-none bg-[#002347] text-white px-6 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl font-black shadow-xl hover:bg-[#003366] transition-all flex justify-center items-center"
+              >
+                <span className="hidden xs:inline mr-1">{currentIdx < totalQuestions - 1 ? 'NEXT' : 'FINISH'}</span> <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (view === 'result') {
+    return (
+      <div className="min-h-screen bg-[#F1F5F9] p-3 md:p-12 pb-24">
+        <div className="max-w-6xl mx-auto">
+          {!reviewMode ? (
+            <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
+              <div className="bg-white rounded-[1.5rem] md:rounded-[3rem] shadow-2xl overflow-hidden border border-slate-200">
+                <div className="bg-[#002347] p-8 md:p-12 text-center text-white relative">
+                   <div className="relative z-10 flex flex-col items-center">
+                     <div className="inline-flex items-center gap-2 md:gap-3 bg-white/10 px-4 md:px-6 py-1.5 md:py-2 rounded-full border border-white/10 mb-6 backdrop-blur-sm">
+                       <FileText className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#D4AF37]" />
+                       <span className="text-[8px] md:text-[10px] font-black tracking-widest uppercase text-[#D4AF37]">Performance Certification</span>
+                     </div>
+                     <h2 className="text-xl md:text-4xl font-black mb-8 md:mb-10 tracking-tight">รายงานสรุปผลการประเมิน</h2>
+                     <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12 w-full">
+                        <div className="bg-white/5 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-white/10 backdrop-blur-md min-w-[150px] md:min-w-[200px] w-full max-w-[250px] md:w-auto">
+                           <div className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-[#D4AF37] mb-1 md:mb-2">Success Rate</div>
+                           <span className="text-6xl md:text-8xl font-black tracking-tighter text-[#D4AF37] drop-shadow-xl">{finalStats.percentage.toFixed(0)}%</span>
+                           <div className={`mt-3 md:mt-4 px-3 md:px-4 py-1 rounded-full font-black text-[9px] md:text-xs uppercase tracking-widest ${finalStats.isPassed ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'}`}>{finalStats.isPassed ? 'Passed' : 'Failed'}</div>
+                        </div>
+                        <div className="flex flex-col items-center">
+                           <div className="mb-3 md:mb-4 bg-[#D4AF37] p-4 md:p-5 rounded-[1.5rem] md:rounded-[2.5rem] text-[#002347] shadow-2xl rotate-3">{currentRank.icon}</div>
+                           <h3 className={`text-xl md:text-2xl font-black uppercase tracking-tight ${currentRank.color}`}>{currentRank.title}</h3>
+                           <p className="text-blue-200 text-[10px] md:text-xs font-medium uppercase tracking-[0.3em] mt-1">Designated Rank</p>
+                        </div>
+                     </div>
+                   </div>
+                </div>
+
+                <div className="px-6 md:px-16 pt-8 md:pt-12">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                     <div className="bg-green-50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-green-100 flex flex-col items-center text-center">
+                        <CheckCircle2 className="w-6 h-6 md:w-8 md:h-8 text-green-600 mb-1 md:mb-2" /><span className="text-[8px] md:text-[10px] font-black text-green-700 uppercase tracking-widest">ถูกต้อง</span>
+                        <div className="text-2xl md:text-3xl font-black text-green-800">{finalStats.correct}</div>
+                     </div>
+                     <div className="bg-red-50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-red-100 flex flex-col items-center text-center">
+                        <XCircle className="w-6 h-6 md:w-8 md:h-8 text-red-600 mb-1 md:mb-2" /><span className="text-[8px] md:text-[10px] font-black text-red-700 uppercase tracking-widest">ผิดพลาด</span>
+                        <div className="text-2xl md:text-3xl font-black text-red-800">{finalStats.incorrect}</div>
+                     </div>
+                     <div className="bg-slate-50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-slate-200 flex flex-col items-center text-center">
+                        <MinusCircle className="w-6 h-6 md:w-8 md:h-8 text-slate-500 mb-1 md:mb-2" /><span className="text-[8px] md:text-[10px] font-black text-slate-600 uppercase tracking-widest">ข้ามข้อสอบ</span>
+                        <div className="text-2xl md:text-3xl font-black text-slate-800">{finalStats.skipped}</div>
+                     </div>
+                     <div className="bg-blue-50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-blue-100 flex flex-col items-center text-center">
+                        <Clock className="w-6 h-6 md:w-8 md:h-8 text-blue-600 mb-1 md:mb-2" /><span className="text-[8px] md:text-[10px] font-black text-blue-700 uppercase tracking-widest">เวลาที่ใช้</span>
+                        <div className="text-2xl md:text-3xl font-black text-blue-800">{formatTime(timeSpentOnFinish)}</div>
+                     </div>
+                  </div>
+                </div>
+
+                <div className="p-6 md:p-16">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+                    <div className="space-y-4 md:space-y-6">
+                      {Object.entries(scoreByCategory).map(([cat, stats]) => {
+                        const percent = (stats.correct / stats.total) * 100;
+                        return (
+                          <div key={cat} className="group">
+                             <div className="flex justify-between items-end mb-1.5 md:mb-2">
+                                <div className="flex items-center gap-2">
+                                   <div className={`p-1.5 rounded-lg ${percent >= 60 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}><SubjectIcon subject={cat} /></div>
+                                   <span className="font-bold text-slate-700 text-[10px] md:text-sm">{cat}</span>
+                                </div>
+                                <span className={`text-base md:text-xl font-black ${percent >= 60 ? 'text-green-600' : 'text-red-500'}`}>{percent.toFixed(0)}%</span>
+                             </div>
+                             <div className="h-2.5 md:h-3.5 bg-slate-100 rounded-full overflow-hidden flex border border-slate-200/50">
+                                <div className={`h-full transition-all duration-1000 ${percent >= 60 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${percent}%` }} />
+                             </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="bg-[#F8FAFC] rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-10 border-2 border-dashed border-slate-200 flex flex-col justify-center text-center md:text-left">
+                       <h4 className="text-lg md:text-xl font-black text-slate-800 uppercase tracking-tight mb-3 md:mb-4">สรุปผลประเมิน</h4>
+                       <p className="text-slate-600 text-xs md:text-sm leading-relaxed mb-6">ท่านทำคะแนนได้ {finalStats.percentage.toFixed(1)}% {finalStats.isPassed ? "ผ่านเกณฑ์มาตรฐาน" : "ยังไม่ผ่านเกณฑ์มาตรฐาน"} ควรเน้นการทบทวนรายวิชาพื้นฐานและฝึกทำโจทย์แบบจำกัดเวลาให้มากขึ้นสม่ำเสมอ</p>
+                       <button onClick={() => setView('history')} className="w-full flex items-center justify-center gap-2 py-3 bg-white border border-slate-200 text-[#002347] font-bold rounded-xl hover:bg-slate-50 transition-all uppercase tracking-widest text-[10px]">
+                         <History className="w-3.5 h-3.5" /> ประวัติการสอบ
+                       </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-10 md:mt-16 flex flex-col sm:flex-row gap-3 md:gap-5">
+                    <button onClick={() => setReviewMode(true)} className="flex-1 py-4 md:py-5 bg-white border-2 border-[#002347] text-[#002347] rounded-xl md:rounded-2xl font-black transition-all hover:bg-[#002347] hover:text-white flex items-center justify-center gap-2 md:gap-3 shadow-lg text-sm md:text-base"><BookOpen className="w-5 h-5 md:w-6 md:h-6" /> ดูเฉลยละเอียด</button>
+                    <button onClick={() => setView('lobby')} className="flex-1 py-4 md:py-5 bg-[#002347] text-white rounded-xl md:rounded-2xl font-black shadow-xl hover:bg-[#003366] transition-all flex items-center justify-center gap-2 md:gap-3 text-sm md:text-base"><RotateCcw className="w-5 h-5 md:w-6 md:h-6" /> ทำชุดอื่น</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+             <div className="space-y-4 md:space-y-8 animate-in slide-in-from-bottom-10 duration-500">
+               <div className="sticky top-4 md:top-6 z-50 bg-white/90 backdrop-blur-md p-4 md:p-6 rounded-xl md:rounded-[2rem] border border-slate-200 shadow-xl flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg md:text-2xl font-black text-[#002347]">REVIEW MODE</h3>
+                  <p className="hidden xs:block text-slate-500 text-[8px] md:text-xs font-bold uppercase tracking-widest">Detailed Breakdown</p>
+                </div>
+                <button onClick={() => setReviewMode(false)} className="bg-[#002347] text-white px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl font-bold shadow-lg text-xs md:text-sm">Back</button>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:gap-6">
+                {QUESTIONS_PART_1.map((q, idx) => {
+                  const isUserCorrect = userAnswers[idx] === q.correct;
+                  const isSkipped = userAnswers[idx] === undefined;
+                  return (
+                    <div key={idx} className={`bg-white rounded-2xl md:rounded-[2rem] p-6 md:p-8 border border-slate-200 shadow-sm relative overflow-hidden`}>
+                      <div className={`absolute left-0 top-0 h-full w-1.5 md:w-2 ${isSkipped ? 'bg-slate-300' : isUserCorrect ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                      <div className="flex justify-between mb-4"><span className="bg-[#002347]/5 text-[#002347] px-3 py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase">{q.subject}</span></div>
+                      <h4 className="text-base md:text-xl font-bold text-slate-800 mb-6">{q.question}</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 md:gap-3">
+                        {q.options.map((opt, oIdx) => {
+                          let style = "bg-slate-50 border-slate-100 text-slate-500";
+                          if (oIdx === q.correct) style = "bg-green-50 border-green-300 text-green-700 font-bold";
+                          else if (userAnswers[idx] === oIdx) style = "bg-red-50 border-red-300 text-red-700 font-bold";
+                          return (
+                            <div key={oIdx} className={`p-3 md:p-4 rounded-xl md:rounded-2xl border-2 flex items-center gap-3 md:gap-4 ${style}`}><div className="w-6 h-6 md:w-8 md:h-8 rounded-md md:rounded-lg flex items-center justify-center font-black text-[10px] md:text-xs border border-current opacity-40">{String.fromCharCode(65 + oIdx)}</div><span className="text-xs md:text-sm">{opt}</span></div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+export default App;
